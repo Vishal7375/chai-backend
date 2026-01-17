@@ -17,6 +17,8 @@ connectDB()
     console.log("MONGO db connection failed !!!" ,err);
 })
 
+// console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET)
+
 
 
 
