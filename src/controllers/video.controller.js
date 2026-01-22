@@ -22,11 +22,15 @@ const publishAVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
     }
 
-    const videoLocalPath = req.files?.video;
+    const videoLocalPath = req.files?.videoFile?.[0]?.path;
 
-    if (!videoLocalPath) {
+    if (!req.files || !req.files.videoFile || req.files.videoFile.length === 0) {
     throw new ApiError(400, "Video file is required");
     }
+
+    // if (!videoLocalPath) {
+    // throw new ApiError(400, "Video file is required");
+    // }
 
     let thumbnailImagePath = req.files?.thumbnail;
 
@@ -38,14 +42,16 @@ const publishAVideo = asyncHandler(async (req, res) => {
     thumbnailImagePath = req.files.thumbnail[0].path;
     }
 
+    console.log(req.files);
+
+
     // const allowedVideoTypes = ["video/mp4", "video/avi", "video/mov", "video/mkv"];
     // if (!allowedVideoTypes.includes(videoLocalPath.mimetype)) {
     //     throw new ApiError(400, "Invalid video format");
     // }
 
-    const videoFile = await uploadOnCloudinary(videoLocalPath);
-
-    if (!videoFile) {
+    const videoUpload  = await uploadOnCloudinary(videoLocalPath);
+    if (!videoUpload ) {
         throw new ApiError(400, "Video upload failed");
     }
 
@@ -58,9 +64,10 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const newVideo = await Video.create({
     title,
     description,
-    videoUrl: videoFile.secure_url,
-    thumbnailUrl: thumbnail.secure_url || "",
-    uploadedBy: req.user._id,
+    videoFile: videoUpload.secure_url,
+    thumbnail: thumbnail.secure_url || "",
+    duration: videoUpload.duration || 0,
+    owner: req.user._id
     });
     res
     .status(201)
